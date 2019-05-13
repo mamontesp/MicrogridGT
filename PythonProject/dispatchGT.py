@@ -7,7 +7,7 @@ import matplotlib.dates as mdates
 from scipy.optimize import fmin
 
 import loadingData
-import utilityFunctions
+import utilityFunctions as uf
 import game
 
 ###Declarations of constants to play
@@ -63,16 +63,30 @@ def graphInitialData():
 	plt.grid(True)
 	plt.show()
 
+
 def calculatingGame():
-	for t in range(0, TN):
-		##initializing game
-		pv_required.append(pv[t])
-		wt_required.append(wt[t])
-		for k in range(0, MaxIter):
-			for i in range(0, N):
-				pv_required[t] = fmin(pv_utility_fn, pv_required[t], args=(pv_required[t], wt_required[t], ld[t] ));
-				print(pv_required[t])
+	##initializing game
+	t = 0
+	power_to_optimize = np.zeros(288,5)
+	power_to_optimize[0].append(pv[t])
+	power_to_optimize[0].append(wt[t])
+	power_to_optimize[0].append(ld[t])
+	power_to_optimize[0].append(bt[t])
+	power_to_optimize[0].append(de[t])
+
+	utility_functions = [uf.pv_utility_fn, \
+						 uf.wt_utility_fn, \
+						 uf.ld_utility_fn, \
+						 uf.bt_utility_fn, \
+						 uf.de_utility_fn]
+	
+	##pv_required.append(pv[t])
+	##wt_required.append(wt[t])
+	
+	for k in range(0, MaxIter):
+		for i in range(0, N):
+			pv_required[t] = fmin(pv_utility_fn, pv_required[t], args=(pv_required[t], wt_required[t], ld[t]));
+			print(pv_required[t])
 
 
 graphInitialData()
-print (t)
