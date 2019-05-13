@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from scipy.optimize import fmin
+from scipy.optimize import minimize
+from scipy.optimize import minimize_scalar
+from scipy.optimize import Bounds
 
 import loadingData
 import utilityFunctions as uf
@@ -15,7 +18,7 @@ import game
 dt=0.0833 # 5 min 
 TN = 288 # Slots of time of data available
 t = 1 # Counter for hour
-N = 3 # Number of players
+N = 5 # Number of players
 i= 1 # counter for players
 d1 = 2
 d2 = 2.5
@@ -31,6 +34,7 @@ wt = []
 ld = []
 bt = []
 de = []
+args_items = []
 
 t, pv, wt, ld, bt, de = loadingData.openFile('../FormattedDataSets/dataWithoutBatteries.csv')
 
@@ -57,36 +61,96 @@ def graphInitialData():
 	ax.xaxis.set_major_locator(hours)
 	ax.xaxis.set_major_formatter(hoursFmt)
 	ax.xaxis.set_minor_locator(minutes)
-	##plt.xticks(xlabels, xlabels, rotation = 'vertical')
 	plt.xlabel("Measurement (5 min each)")
 	plt.ylabel("kWh")
 	plt.grid(True)
 	plt.show()
 
+##Players
+# PV = 0 
+# WT = 1
+# LD = 2
+# BT = 3
+# DE = 4
 
-def calculatingGame():
-	##initializing game
-	t = 0
-	power_to_optimize = np.zeros(288,5)
-	power_to_optimize[0].append(pv[t])
-	power_to_optimize[0].append(wt[t])
-	power_to_optimize[0].append(ld[t])
-	power_to_optimize[0].append(bt[t])
-	power_to_optimize[0].append(de[t])
+def defineBounds(t):
+	pv_bounds = Bounds(lb=0, ub=pv[t])
+	wt_bounds = Bounds(lb=0, ub=wt[t])
+	ld_bounds = Bounds(lb=0, ub=ld[t])
+	bt_bounds = Bounds(lb=uf.bt_energy_min/dt, ub=uf.bt_energy_max/dt)
+	de_bounds = Bounds(lb=uf.de_min, ub=uf.de_max)
 
+	players_bounds = [ pv_bounds, \
+					   wt_bounds, \
+					   ld_bounds, \
+					   bt_bounds, \
+					   de_bounds
+					 ]
+	return players_bounds
+
+def defineUtilityFunctions():
 	utility_functions = [uf.pv_utility_fn, \
 						 uf.wt_utility_fn, \
 						 uf.ld_utility_fn, \
 						 uf.bt_utility_fn, \
 						 uf.de_utility_fn]
-	
-	##pv_required.append(pv[t])
-	##wt_required.append(wt[t])
-	
-	for k in range(0, MaxIter):
+	return utility_functions
+
+def defineFirstGuest (t):
+	power_to_optimize_t = np.zeros(5) 
+	power_to_optimize_t[0] = pv[t]
+	power_to_optimize_t[1] = wt[t]
+	power_to_optimize_t[2] = ld[t]
+	power_to_optimize_t[3] = bt[t]
+	power_to_optimize_t[4] = de[t]
+	return power_to_optimize_t
+
+def calculatingGame():
+	##initializing game
+	t = 0
+	power_to_optimize = np.zeros((288,5))
+	utility_functions = defineUtilityFunctions()
+
+	power_to_optimize[t] = defineFirstGuest(t)
+	players_bounds = defineBounds(t)
+
+	for k in range(0, 3):
 		for i in range(0, N):
-			pv_required[t] = fmin(pv_utility_fn, pv_required[t], args=(pv_required[t], wt_required[t], ld[t]));
-			print(pv_required[t])
+			args_items = range(0, N)
+			del args_items[i]
+			print (args_items)
+			pv_bounds = Bounds(lb=0, ub=pv[t])			
+			x0_array = np.array([power_to_optimize[t][i]])
+			print ('x0array {} , shape {}'.format(x0_array, x0_array.shape))
+			#power_to_optimize[t][i] = minimize_scalar (utility_functions[i], 
+			#	args=(power_to_optimize[t][args_items[0]], \
+			#	power_to_optimize[t][args_items[1]], \
+			#	power_to_optimize[t][args_items[2]], \
+			#	power_to_optimize[t][args_items[3]], \
+			#	dt), \
+			#	method = 'bounded', \
+			#	bounds = (0.,3.)\
+			#	)
+
+			#power_to_optimize[t][i] = minimize(utility_functions[i],x0=power_to_optimize[t][i], \
+			#	args=(power_to_optimize[t][args_items[0]], \
+			#	power_to_optimize[t][args_items[1]], \
+			#	power_to_optimize[t][args_items[2]], \
+			#	power_to_optimize[t][args_items[3]], \
+			#	dt), \
+			#	bounds=((2,200),))
 
 
-graphInitialData()
+			power_to_optimize[t][i] = fmin(utility_functions[i],x0=power_to_optimize[t][i], \
+				args=(power_to_optimize[t][args_items[0]], \
+				power_to_optimize[t][args_items[1]], \
+				power_to_optimize[t][args_items[2]], \
+				power_to_optimize[t][args_items[3]], \
+				dt))
+
+			print ("Found max for utility function {} with {}".format(i,power_to_optimize[t][i]))
+			del args_items[:]
+		print ("Iteration number {}".format(k))
+
+#graphInitialData()
+calculatingGame()
