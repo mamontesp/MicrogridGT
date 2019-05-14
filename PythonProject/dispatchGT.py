@@ -8,6 +8,7 @@ from scipy.optimize import fmin
 from scipy.optimize import minimize
 from scipy.optimize import minimize_scalar
 from scipy.optimize import Bounds
+from functools import partial
 
 import loadingData
 import utilityFunctions as uf
@@ -88,12 +89,14 @@ def defineBounds(t):
 					 ]
 	return players_bounds
 
-def defineUtilityFunctions():
-	utility_functions = [uf.pv_utility_fn, \
-						 uf.wt_utility_fn, \
-						 uf.ld_utility_fn, \
-						 uf.bt_utility_fn, \
-						 uf.de_utility_fn]
+def defineUtilityFunctions(pv, wt, ld, bt, de, dt):
+
+	utility_functions = [partial (uf.pv_utility_fn, wt = wt, ld = ld, bt = bt, de = de, dt = dt),\
+						 partial (uf.wt_utility_fn, pv = pv, ld = ld, bt = bt, de = de, dt = dt),\
+						 partial (uf.ld_utility_fn, pv = pv, wt = wt, bt = bt, de = de, dt = dt),\
+						 partial (uf.bt_utility_fn, pv = pv, wt = wt, ld = ld, de = de, dt = dt),\
+						 partial (uf.de_utility_fn, pv = pv, wt = wt, bt = bt, ld = ld, dt = dt),\
+						] 
 	return utility_functions
 
 def defineFirstGuest (t):
@@ -106,51 +109,30 @@ def defineFirstGuest (t):
 	return power_to_optimize_t
 
 def calculatingGame():
-	##initializing game
+	##Initializing game
 	t = 0
 	power_to_optimize = np.zeros((288,5))
-	utility_functions = defineUtilityFunctions()
-
-	power_to_optimize[t] = defineFirstGuest(t)
+	power_to_optimize[t]= defineFirstGuest(t)
 	players_bounds = defineBounds(t)
 
 	for k in range(0, 3):
 		for i in range(0, N):
-			args_items = range(0, N)
-			del args_items[i]
-			print (args_items)
-			pv_bounds = Bounds(lb=0, ub=pv[t])			
-			x0_array = np.array([power_to_optimize[t][i]])
-			print ('x0array {} , shape {}'.format(x0_array, x0_array.shape))
-			#power_to_optimize[t][i] = minimize_scalar (utility_functions[i], 
-			#	args=(power_to_optimize[t][args_items[0]], \
-			#	power_to_optimize[t][args_items[1]], \
-			#	power_to_optimize[t][args_items[2]], \
-			#	power_to_optimize[t][args_items[3]], \
-			#	dt), \
-			#	method = 'bounded', \
-			#	bounds = (0.,3.)\
-			#	)
-
-			#power_to_optimize[t][i] = minimize(utility_functions[i],x0=power_to_optimize[t][i], \
-			#	args=(power_to_optimize[t][args_items[0]], \
-			#	power_to_optimize[t][args_items[1]], \
-			#	power_to_optimize[t][args_items[2]], \
-			#	power_to_optimize[t][args_items[3]], \
-			#	dt), \
-			#	bounds=((2,200),))
-
-
-			power_to_optimize[t][i] = fmin(utility_functions[i],x0=power_to_optimize[t][i], \
-				args=(power_to_optimize[t][args_items[0]], \
-				power_to_optimize[t][args_items[1]], \
-				power_to_optimize[t][args_items[2]], \
-				power_to_optimize[t][args_items[3]], \
-				dt))
+			utility_functions = defineUtilityFunctions( \
+								power_to_optimize[t][0], \
+								power_to_optimize[t][1], \
+								power_to_optimize[t][2], \
+								power_to_optimize[t][3], \
+								power_to_optimize[t][4], \
+								dt \
+								)
+			
+			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i])
+			power_to_optimize[t][i] = res.x
 
 			print ("Found max for utility function {} with {}".format(i,power_to_optimize[t][i]))
-			del args_items[:]
 		print ("Iteration number {}".format(k))
 
 #graphInitialData()
 calculatingGame()
+
+

@@ -57,8 +57,8 @@ def pv_utility_fn(pv, wt, ld, bt, de, dt):
 	#print ('BT {}'.format(bt))
 	#print ('DE {}'.format(de))
 
-	return -1*((pv_unit_electric_price-pv_unit_maintenance_cost)*pv*dt \
-	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
+	return float(-1*((pv_unit_electric_price-pv_unit_maintenance_cost)*pv*dt \
+	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2)))
 
 ##Utility function of WT taking into account power balance
 def wt_utility_fn(wt, pv, ld, bt, de, dt):
@@ -132,28 +132,14 @@ def bt_energy_to_charge_constraint(soc):
 
 ##Utility function of LD taking into account power balance
 def ld_utility_fn(ld, pv, wt, bt, de, dt):
+	#ld = ld[0]
+	#print ('PV {}'.format(pv))
+	#print ('WT {}'.format(wt))
+	#print ('LD {}'.format(ld))
+	#print ('BT {}'.format(bt))
+	#print ('DE {}'.format(de))
 	return ((1-ld_weight_satisfaction)*ld_unit_electric_price*ld + ld_weight_satisfaction*ld_satifaction_fn(ld))
 
 ## Satisfaction function of load consumption
 def ld_satifaction_fn(ld):
 	return ld_nom*ld_beta*(np.power((ld/ld_nom),ld_alpha) - 1)
-
-
-##Bounds definitions
-#def pv_bounds(pv):
-#	return 0, pv
-
-#def wt_bounds(wt):
-#	return 0, wt
-
-#def ld_bounds(ld):
-#	return ld*0.95, ld*1.05
-
-#def bt_bounds(a):
-	##Argument added just for keep a similar structure to previous functions
-#	return (bt_energy_min/dt), (bt_energy_max/dt)
-
-#def de_bounds(a):
-	##Argument added just for keep a similar structure to previous functions
-#	return de_min, de_max
-
