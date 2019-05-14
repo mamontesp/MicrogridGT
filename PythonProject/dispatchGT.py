@@ -74,17 +74,11 @@ def graphInitialData():
 # BT = 3
 # DE = 4
 
-def defineBounds(t):
-	#pv_bounds = Bounds(lb=0, ub=pv[t])
-	#wt_bounds = Bounds(lb=0, ub=wt[t])
-	#ld_bounds = Bounds(lb=0, ub=ld[t])
-	#bt_bounds = Bounds(lb=uf.bt_energy_min/dt, ub=uf.bt_energy_max/dt)
-	#de_bounds = Bounds(lb=uf.de_min, ub=uf.de_max)
-
+def defineBounds(t, bt = 0):
 	pv_bounds = (0, pv[t])
 	wt_bounds = (0, wt[t])
 	ld_bounds = (0, ld[t])
-	bt_bounds = (uf.bt_energy_min/dt, uf.bt_energy_max/dt)
+	bt_bounds = (uf.bt_energy_to_charge_constraint(bt,dt))
 	de_bounds = (uf.de_min, uf.de_max)
 
 
@@ -97,7 +91,6 @@ def defineBounds(t):
 	return players_bounds
 
 def defineUtilityFunctions(pv, wt, ld, bt, de, dt):
-
 	utility_functions = [partial (uf.pv_utility_fn, wt = wt, ld = ld, bt = bt, de = de, dt = dt),\
 						 partial (uf.wt_utility_fn, pv = pv, ld = ld, bt = bt, de = de, dt = dt),\
 						 partial (uf.ld_utility_fn, pv = pv, wt = wt, bt = bt, de = de, dt = dt),\
@@ -107,7 +100,7 @@ def defineUtilityFunctions(pv, wt, ld, bt, de, dt):
 	return utility_functions
 
 def defineFirstGuest (t):
-	power_to_optimize_t = np.zeros(5) 
+	power_to_optimize_t = np.zeros(5)
 	power_to_optimize_t[0] = pv[t]
 	power_to_optimize_t[1] = wt[t]
 	power_to_optimize_t[2] = ld[t]
@@ -120,10 +113,11 @@ def calculatingGame():
 	t = 0
 	power_to_optimize = np.zeros((288,5))
 	power_to_optimize[t]= defineFirstGuest(t)
-	players_bounds = defineBounds(t)
+	
 
 	for k in range(0, 3):
 		for i in range(0, N):
+			players_bounds = defineBounds(t, power_to_optimize[t][3])
 			utility_functions = defineUtilityFunctions( \
 								power_to_optimize[t][0], \
 								power_to_optimize[t][1], \
@@ -136,8 +130,15 @@ def calculatingGame():
 			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
 			#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
 			power_to_optimize[t][i] = res.x
+			#print ("x {}, fn {}". format(res.x, res.fun))
+			#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
+			print ('pv \t\t pv[t] {} \t\t pv_opt {} '.format(pv[t],power_to_optimize[t][0]))
+			print ('wt \t\t wt[t] {} \t\t wt_opt {} '.format(wt[t],power_to_optimize[t][1]))
+			print ('ld \t\t ld[t] {} \t\t ld_opt {} '.format(ld[t],power_to_optimize[t][2]))
+			print ('bt \t\t bt[t] {} \t\t bt_opt {} '.format(bt[t],power_to_optimize[t][3]))
+			print ('de \t\t de[t] {} \t\t de_opt {} '.format(de[t],power_to_optimize[t][4]))
+			print ('----------------------------------------------')
 
-			print ("Found max for utility function {} with {}".format(i,power_to_optimize[t][i]))
 		print ("Iteration number {}".format(k))
 
 #graphInitialData()

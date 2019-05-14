@@ -1,7 +1,7 @@
 import numpy as np
 
 ##Penalty function modelling
-alpha = 0.1
+alpha = 0.5
 
 ##PV modelling
 pv_unit_electric_price = 5.0
@@ -31,14 +31,15 @@ bt_unit_maintenance_cost = 2.0
 bt_self_dis_rate = 0.001
 bt_capacity = 10 
 bt_char_eff = 0.95
-bt_dis_eff = 1/0.95
+bt_dis_eff = 0.95
 bt_soc_max = 100
 bt_soc_min = 60
 bt_energy_min = -0.2 *  bt_capacity / bt_char_eff
 bt_energy_max = 0.2 *  bt_capacity * bt_dis_eff
+bt_soc = 100
 
 ##Load modelling
-ld_weight_satisfaction = 0.2
+ld_weight_satisfaction = 0.9
 ld_unit_electric_price = 2
 ld_beta = -20
 ld_alpha = 0.5
@@ -102,33 +103,41 @@ def minimun_running_time_de_constraint_fn(de_activation_list, dt):
 	return True
 
 def bt_utility_fn(bt, pv, wt, ld, de, dt):
-		return (bt_unit_electric_price*bt*dt \
-			- bt_unit_maintenance_cost*np.abs(bt)*dt \
-			- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
+	#print ('bt {}'.format(bt))
+	#print ('pv {}'.format(pv))
+	#print ('wt {}'.format(wt))
+	#print ('ld {}'.format(ld))
+	#print ('de {}'.format(de))
+	print ('penalty_fn{}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
+	return (bt_unit_electric_price*bt*dt \
+		- bt_unit_maintenance_cost*np.abs(bt)*dt \
+		- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
 
-def soc_bt_fn(bt, soc_curr, soc_past):
+def soc_bt_fn(bt, dt):
+	global bt_soc
 	if (bt > 0):
-		soc_curr = soc_past*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_dis_eff
+		bt_soc = bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_dis_eff
 	else:
-		soc_curr = soc_past*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_char_eff
+		bt_soc = bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_char_eff
+	return bt_soc;
 
-def soc_bt_max_min_constraint_fn(soc):
-	if ((soc < bt_soc_max) and (soc > bt_soc_min)):
+def soc_bt_max_min_constraint_fn():
+	global bt_soc
+	if ((bt_soc < bt_soc_max) and (bt_soc > bt_soc_min)):
 		return True
 	else:
 		return False
 
-def bt_energy_min_max_constraint(bt):
+def bt_energy_min_max_constraint(bt,dt):
 	if ((bt*dt < bt_energy_max) and (bt*dt > bt_energy_min)):
 		return True
 	else:
 		return False
 
-def bt_energy_to_charge_constraint(soc):
-	bt_energy_max_charge = np.max(bt_energy_max, -(bt_soc_max - soc)*bt_capacity*bt_char_eff)
-	bt_energy_max_discharge = np.min(bt_energy_min, (soc - bt_soc_min)*bt_capacity*bt_dis_eff)
-	return bt_energy_max_charge, bt_energy_max_discharge
-
+def bt_energy_to_charge_constraint(bt,dt):
+	bt_energy_max_charge = max(bt_energy_max, -(bt_soc_max - soc_bt_fn(bt, dt))*bt_capacity*bt_char_eff)
+	bt_energy_max_discharge = min(bt_energy_min, (soc_bt_fn(bt, dt) - bt_soc_min)*bt_capacity*bt_dis_eff)
+	return bt_energy_max_discharge, bt_energy_max_charge
 
 ##Utility function of LD taking into account power balance
 def ld_utility_fn(ld, pv, wt, bt, de, dt):
