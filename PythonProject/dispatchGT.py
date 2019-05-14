@@ -75,11 +75,18 @@ def graphInitialData():
 # DE = 4
 
 def defineBounds(t):
-	pv_bounds = Bounds(lb=0, ub=pv[t])
-	wt_bounds = Bounds(lb=0, ub=wt[t])
-	ld_bounds = Bounds(lb=0, ub=ld[t])
-	bt_bounds = Bounds(lb=uf.bt_energy_min/dt, ub=uf.bt_energy_max/dt)
-	de_bounds = Bounds(lb=uf.de_min, ub=uf.de_max)
+	#pv_bounds = Bounds(lb=0, ub=pv[t])
+	#wt_bounds = Bounds(lb=0, ub=wt[t])
+	#ld_bounds = Bounds(lb=0, ub=ld[t])
+	#bt_bounds = Bounds(lb=uf.bt_energy_min/dt, ub=uf.bt_energy_max/dt)
+	#de_bounds = Bounds(lb=uf.de_min, ub=uf.de_max)
+
+	pv_bounds = (0, pv[t])
+	wt_bounds = (0, wt[t])
+	ld_bounds = (0, ld[t])
+	bt_bounds = (uf.bt_energy_min/dt, uf.bt_energy_max/dt)
+	de_bounds = (uf.de_min, uf.de_max)
+
 
 	players_bounds = [ pv_bounds, \
 					   wt_bounds, \
@@ -126,7 +133,8 @@ def calculatingGame():
 								dt \
 								)
 			
-			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i])
+			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
+			#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
 			power_to_optimize[t][i] = res.x
 
 			print ("Found max for utility function {} with {}".format(i,power_to_optimize[t][i]))
