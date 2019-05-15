@@ -82,7 +82,6 @@ def defineBounds(t, bt = 0):
 	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
 	de_bounds = (uf.de_min, uf.de_max)
 
-
 	#print ('Bounds')
 	#print ('pv_bounds {}'. format(pv_bounds))
 	#print ('wt_bounds {}'. format(wt_bounds))
@@ -122,33 +121,33 @@ def calculatingGame():
 	power_to_optimize = np.zeros((288,5))
 	power_to_optimize[t]= defineFirstGuest(t)
 	
+	for t in range(0, 288):
+		for k in range(0, 10):
+			for i in range(0, N):
+				players_bounds = defineBounds(t, power_to_optimize[t][3])
+				utility_functions = defineUtilityFunctions( \
+									power_to_optimize[t][0], \
+									power_to_optimize[t][1], \
+									power_to_optimize[t][2], \
+									power_to_optimize[t][3], \
+									power_to_optimize[t][4], \
+									dt \
+									)
+				
+				print ('pv \t\t pv[t] {} \t\t pv_opt {} '.format(pv[t],power_to_optimize[t][0]))
+				print ('wt \t\t wt[t] {} \t\t wt_opt {} '.format(wt[t],power_to_optimize[t][1]))
+				print ('ld \t\t ld[t] {} \t\t ld_opt {} '.format(ld[t],power_to_optimize[t][2]))
+				print ('bt \t\t bt[t] {} \t\t bt_opt {} '.format(bt[t],power_to_optimize[t][3]))
+				print ('de \t\t de[t] {} \t\t de_opt {} '.format(de[t],power_to_optimize[t][4]))
+				print ('----------------------------------------------')
 
-	for k in range(0, 3):
-		for i in range(0, N):
-			players_bounds = defineBounds(t, power_to_optimize[t][3])
-			utility_functions = defineUtilityFunctions( \
-								power_to_optimize[t][0], \
-								power_to_optimize[t][1], \
-								power_to_optimize[t][2], \
-								power_to_optimize[t][3], \
-								power_to_optimize[t][4], \
-								dt \
-								)
-			
-			print ('pv \t\t pv[t] {} \t\t pv_opt {} '.format(pv[t],power_to_optimize[t][0]))
-			print ('wt \t\t wt[t] {} \t\t wt_opt {} '.format(wt[t],power_to_optimize[t][1]))
-			print ('ld \t\t ld[t] {} \t\t ld_opt {} '.format(ld[t],power_to_optimize[t][2]))
-			print ('bt \t\t bt[t] {} \t\t bt_opt {} '.format(bt[t],power_to_optimize[t][3]))
-			print ('de \t\t de[t] {} \t\t de_opt {} '.format(de[t],power_to_optimize[t][4]))
-			print ('----------------------------------------------')
+				res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
+				#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
+				power_to_optimize[t][i] = res.x
+				#print ("x {}, fn {}". format(res.x, res.fun))
+				#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
 
-			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
-			#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
-			power_to_optimize[t][i] = res.x
-			#print ("x {}, fn {}". format(res.x, res.fun))
-			#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
-
-		print ("Iteration number {}".format(k))
+			print ("Iteration number {}".format(k))
 
 def testBatteryOptimization():
 	print ('testBatteryOptimization')

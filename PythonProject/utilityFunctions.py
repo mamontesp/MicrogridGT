@@ -26,8 +26,8 @@ de_ramp_down = 1
 de_min_running_time = 0.3
 
 ##Battery modelling
-bt_unit_electric_price = 1.0
-bt_unit_maintenance_cost = 2.0
+bt_unit_electric_price = 0.1
+bt_unit_maintenance_cost = 0.05
 bt_self_dis_rate = 0.001
 bt_capacity = 10 
 bt_char_eff = 0.95
