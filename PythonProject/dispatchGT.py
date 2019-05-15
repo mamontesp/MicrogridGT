@@ -146,9 +146,19 @@ def calculatingGame():
 			power_to_optimize[t][i] = res.x
 			#print ("x {}, fn {}". format(res.x, res.fun))
 			#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
-			
 
 		print ("Iteration number {}".format(k))
+
+def testBatteryOptimization()
+	t = 0
+	pv = pv[t]
+	wt = wt[t]
+	ld = ld[t]
+	bt = bt[t]
+	de = de[t]
+	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
+	bt_partial = partial (uf.bt_utility_fn, pv = pv, wt = wt, ld = ld, de = de, dt = dt)
+	res = minimize_scalar(bt_partial, bounds=bt_bounds, method='bounded')
 
 #graphInitialData()
 calculatingGame()
