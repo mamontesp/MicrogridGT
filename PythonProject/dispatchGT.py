@@ -78,16 +78,17 @@ def defineBounds(t, bt = 0):
 	pv_bounds = (0, pv[t])
 	wt_bounds = (0, wt[t])
 	ld_bounds = (0, ld[t])
-	bt_bounds = (uf.bt_energy_to_charge_constraint(bt,dt))
+	#bt_bounds = (uf.bt_energy_to_charge_constraint(bt,dt))
+	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
 	de_bounds = (uf.de_min, uf.de_max)
 
 
-	print ('Bounds')
-	print ('pv_bounds {}'. format(pv_bounds))
-	print ('wt_bounds {}'. format(wt_bounds))
-	print ('ld_bounds {}'. format(ld_bounds))
-	print ('bt_bounds {}'. format(bt_bounds))
-	print ('de_bounds {}'. format(de_bounds))
+	#print ('Bounds')
+	#print ('pv_bounds {}'. format(pv_bounds))
+	#print ('wt_bounds {}'. format(wt_bounds))
+	#print ('ld_bounds {}'. format(ld_bounds))
+	#print ('bt_bounds {}'. format(bt_bounds))
+	#print ('de_bounds {}'. format(de_bounds))
 
 	players_bounds = [ pv_bounds, \
 					   wt_bounds, \
@@ -149,18 +150,21 @@ def calculatingGame():
 
 		print ("Iteration number {}".format(k))
 
-def testBatteryOptimization()
+def testBatteryOptimization():
+	print ('testBatteryOptimization')
 	t = 0
-	pv = pv[t]
-	wt = wt[t]
-	ld = ld[t]
-	bt = bt[t]
-	de = de[t]
+	pv_b = pv[t]
+	wt_b = wt[t]
+	ld_b = ld[t]
+	bt_b = bt[t]
+	de_b = de[t]
+	print ('pv {}, wt {}, ld {}, bt {}, de {}'.format(pv_b, wt_b, ld_b, bt_b, de_b))
 	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
-	bt_partial = partial (uf.bt_utility_fn, pv = pv, wt = wt, ld = ld, de = de, dt = dt)
+	bt_partial = partial (uf.bt_utility_fn, pv = pv_b, wt = wt_b, ld = ld_b, de = de_b, dt = dt)
 	res = minimize_scalar(bt_partial, bounds=bt_bounds, method='bounded')
 
 #graphInitialData()
 calculatingGame()
+#testBatteryOptimization()
 
 

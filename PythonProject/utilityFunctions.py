@@ -103,13 +103,13 @@ def minimun_running_time_de_constraint_fn(de_activation_list, dt):
 	return True
 
 def bt_utility_fn(bt, pv, wt, ld, de, dt):
-	print ('bt {}'.format(bt))
-	print ('pv {}'.format(pv))
-	print ('wt {}'.format(wt))
-	print ('ld {}'.format(ld))
-	print ('de {}'.format(de))
+	#print ('bt {}'.format(bt))
+	#print ('pv {}'.format(pv))
+	#print ('wt {}'.format(wt))
+	#print ('ld {}'.format(ld))
+	#print ('de {}'.format(de))
 	print ('penalty_fn {}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
-	return (bt_unit_electric_price*bt*dt \
+	return -1*(bt_unit_electric_price*bt*dt \
 		- bt_unit_maintenance_cost*np.abs(bt)*dt \
 		- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
 
