@@ -16,9 +16,9 @@ de_oil_price = 3.0
 de_unit_electric_price = 4.0
 de_unit_maintenance_cost = 3.0
 de_rate_oil_consumption = 2
-a_oil_consumption = 1
-b_oil_consumption= 2
-c_oil_consumption = 1
+de_a_oil_consumption = 1
+de_b_oil_consumption= 2
+de_c_oil_consumption = 1
 de_min = 1
 de_max = 10
 de_ramp_up = 2
@@ -68,12 +68,12 @@ def wt_utility_fn(wt, pv, ld, bt, de, dt):
 
 ##Utility function of DE taking into account power balance
 def de_utility_fn(de, pv, wt, ld, bt, dt):
-	return -1*((de_unit_electric_price-de_unit_maintenance_cost)*de*dt - de_oil_price * de_rate_oil_consumption * dt\
+	return -1*((de_unit_electric_price-de_unit_maintenance_cost)*de*dt - de_oil_price * rate_oil_consumption_fn(de) * dt\
 	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
 
 ##Rate consumption of oil function
 def rate_oil_consumption_fn(de):
-	return aOil* np.power(de,2) + bOil*de + cOil
+	return de_a_oil_consumption* np.power(de,2) + de_b_oil_consumption*de + de_c_oil_consumption
 
 def ramp_up_oil_constraint_fn(de_curr, de_past, dt):
 	if((de_curr - de_past) < (dt*de_ramp_up)):
@@ -103,12 +103,12 @@ def minimun_running_time_de_constraint_fn(de_activation_list, dt):
 	return True
 
 def bt_utility_fn(bt, pv, wt, ld, de, dt):
-	#print ('bt {}'.format(bt))
-	#print ('pv {}'.format(pv))
-	#print ('wt {}'.format(wt))
-	#print ('ld {}'.format(ld))
-	#print ('de {}'.format(de))
-	print ('penalty_fn{}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
+	print ('bt {}'.format(bt))
+	print ('pv {}'.format(pv))
+	print ('wt {}'.format(wt))
+	print ('ld {}'.format(ld))
+	print ('de {}'.format(de))
+	print ('penalty_fn {}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
 	return (bt_unit_electric_price*bt*dt \
 		- bt_unit_maintenance_cost*np.abs(bt)*dt \
 		- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
@@ -137,6 +137,8 @@ def bt_energy_min_max_constraint(bt,dt):
 def bt_energy_to_charge_constraint(bt,dt):
 	bt_energy_max_charge = max(bt_energy_max, -(bt_soc_max - soc_bt_fn(bt, dt))*bt_capacity*bt_char_eff)
 	bt_energy_max_discharge = min(bt_energy_min, (soc_bt_fn(bt, dt) - bt_soc_min)*bt_capacity*bt_dis_eff)
+	print('bt_energy_max_discharge {}'.format(bt_energy_max_discharge))
+	print('bt_energy_max_charge {}'.format(bt_energy_max_charge))
 	return bt_energy_max_discharge, bt_energy_max_charge
 
 ##Utility function of LD taking into account power balance

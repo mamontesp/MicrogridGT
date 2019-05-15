@@ -82,6 +82,13 @@ def defineBounds(t, bt = 0):
 	de_bounds = (uf.de_min, uf.de_max)
 
 
+	print ('Bounds')
+	print ('pv_bounds {}'. format(pv_bounds))
+	print ('wt_bounds {}'. format(wt_bounds))
+	print ('ld_bounds {}'. format(ld_bounds))
+	print ('bt_bounds {}'. format(bt_bounds))
+	print ('de_bounds {}'. format(de_bounds))
+
 	players_bounds = [ pv_bounds, \
 					   wt_bounds, \
 					   ld_bounds, \
@@ -127,17 +134,19 @@ def calculatingGame():
 								dt \
 								)
 			
-			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
-			#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
-			power_to_optimize[t][i] = res.x
-			#print ("x {}, fn {}". format(res.x, res.fun))
-			#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
 			print ('pv \t\t pv[t] {} \t\t pv_opt {} '.format(pv[t],power_to_optimize[t][0]))
 			print ('wt \t\t wt[t] {} \t\t wt_opt {} '.format(wt[t],power_to_optimize[t][1]))
 			print ('ld \t\t ld[t] {} \t\t ld_opt {} '.format(ld[t],power_to_optimize[t][2]))
 			print ('bt \t\t bt[t] {} \t\t bt_opt {} '.format(bt[t],power_to_optimize[t][3]))
 			print ('de \t\t de[t] {} \t\t de_opt {} '.format(de[t],power_to_optimize[t][4]))
 			print ('----------------------------------------------')
+
+			res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
+			#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
+			power_to_optimize[t][i] = res.x
+			#print ("x {}, fn {}". format(res.x, res.fun))
+			#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
+			
 
 		print ("Iteration number {}".format(k))
 
