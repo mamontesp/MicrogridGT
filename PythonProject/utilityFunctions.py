@@ -19,7 +19,7 @@ de_rate_oil_consumption = 2
 de_a_oil_consumption = 1
 de_b_oil_consumption= 2
 de_c_oil_consumption = 1
-de_min = 1
+de_min = 0
 de_max = 10
 de_ramp_up = 2
 de_ramp_down = 1
@@ -28,14 +28,14 @@ de_min_running_time = 0.3
 ##Battery modelling
 bt_unit_electric_price = 0.1
 bt_unit_maintenance_cost = 0.05
-bt_self_dis_rate = 0.001
+bt_self_dis_rate = 0.0001
 bt_capacity = 10 
 bt_char_eff = 0.95
 bt_dis_eff = 0.95
 bt_soc_max = 100
 bt_soc_min = 60
-bt_energy_min = -0.2 *  bt_capacity / bt_char_eff
-bt_energy_max = 0.2 *  bt_capacity * bt_dis_eff
+bt_power_charge = -0.2 *  bt_capacity * bt_char_eff
+bt_power_discharge = 0.2 *  bt_capacity * bt_dis_eff
 bt_soc = 100
 
 ##Load modelling
@@ -113,33 +113,50 @@ def bt_utility_fn(bt, pv, wt, ld, de, dt):
 		- bt_unit_maintenance_cost*np.abs(bt)*dt \
 		- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
 
+def soc_bt_update_fn(bt, dt):
+	global bt_soc
+	bt_soc = soc_bt_fn(bt,dt)
+
+
 def soc_bt_fn(bt, dt):
 	global bt_soc
-	if (bt > 0):
-		bt_soc = bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_dis_eff
-	else:
-		bt_soc = bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_char_eff
-	return bt_soc;
+	print ('soc_bt_fn')
+	print ('bt {}'.format(bt))
+	print ('bt_soc {}'.format(bt_soc))
+	bt_soc = (bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_capacity*bt_char_eff)
+	return bt_soc
 
-def soc_bt_max_min_constraint_fn():
+
+def soc_bt_max_constraint_fn(bt, dt):
+	soc_bt_max_cn = bt_soc_max - bt_soc
+	print ('soc_bt_max_cn {}'.format(soc_bt_max_cn))
+	return soc_bt_max_cn
+
+def soc_bt_min_constraint_fn(bt, dt):
+	soc_bt_min_cn = soc_bt_fn(bt, dt) - bt_soc_min 
+	print ('soc_bt_min_cn {}'.format(soc_bt_min_cn))
+	return soc_bt_min_cn
+
+#def bt_energy_min_max_constraint(bt,dt):
+#	if ((bt*dt < bt_energy_max) and (bt*dt > bt_energy_min)):
+#		return True
+#	else:
+#		return False
+
+def bt_power_constraint(bt,dt):
+	print ('bt_power_charge {}'.format(bt_power_charge))
+	print ('bt_power_discharge {}'.format(bt_power_discharge))
 	global bt_soc
-	if ((bt_soc < bt_soc_max) and (bt_soc > bt_soc_min)):
-		return True
-	else:
-		return False
+	print ('bt_soc 1 {}'.format(bt_soc))
+	bt_soc = soc_bt_fn(bt, dt)
+	print ('bt_soc 2 {}'.format(bt_soc))
+	bt_power_max_charge = max(bt_power_charge, -(bt_soc_max - bt_soc)*bt_capacity*bt_char_eff)
+	bt_power_max_discharge = min(bt_power_discharge, (bt_soc - bt_soc_min)*bt_capacity*bt_dis_eff)
 
-def bt_energy_min_max_constraint(bt,dt):
-	if ((bt*dt < bt_energy_max) and (bt*dt > bt_energy_min)):
-		return True
-	else:
-		return False
-
-def bt_energy_to_charge_constraint(bt,dt):
-	bt_energy_max_charge = max(bt_energy_max, -(bt_soc_max - soc_bt_fn(bt, dt))*bt_capacity*bt_char_eff)
-	bt_energy_max_discharge = min(bt_energy_min, (soc_bt_fn(bt, dt) - bt_soc_min)*bt_capacity*bt_dis_eff)
-	print('bt_energy_max_discharge {}'.format(bt_energy_max_discharge))
-	print('bt_energy_max_charge {}'.format(bt_energy_max_charge))
-	return bt_energy_max_discharge, bt_energy_max_charge
+	
+	print('bt_power_max_charge {}'.format(bt_power_max_charge))
+	print('bt_power_max_discharge {}'.format(bt_power_max_discharge))
+	return bt_power_max_charge, bt_power_max_discharge
 
 ##Utility function of LD taking into account power balance
 def ld_utility_fn(ld, pv, wt, bt, de, dt):

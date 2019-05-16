@@ -79,7 +79,8 @@ def defineBounds(t, bt = 0):
 	wt_bounds = (0, wt[t])
 	ld_bounds = (0, ld[t])
 	#bt_bounds = (uf.bt_energy_to_charge_constraint(bt,dt))
-	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
+	#bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
+	bt_bounds = uf.bt_power_constraint(bt, dt)
 	de_bounds = (uf.de_min, uf.de_max)
 
 	#print ('Bounds')
@@ -106,7 +107,7 @@ def defineUtilityFunctions(pv, wt, ld, bt, de, dt):
 						] 
 	return utility_functions
 
-def defineFirstGuest (t):
+def defineFirstGuest (t, bt_prev, de_prev):
 	power_to_optimize_t = np.zeros(5)
 	power_to_optimize_t[0] = pv[t]
 	power_to_optimize_t[1] = wt[t]
@@ -119,12 +120,20 @@ def calculatingGame():
 	##Initializing game
 	t = 0
 	power_to_optimize = np.zeros((288,5))
-	power_to_optimize[t]= defineFirstGuest(t)
 	
-	for t in range(0, 288):
-		for k in range(0, 10):
+	for t in range(0,288):
+		print ('Sample # {}'.format(t))
+		
+		if (t == 0):
+			power_to_optimize[t]= defineFirstGuest(t, bt[t], de[t])
+		else:
+			power_to_optimize[t]= defineFirstGuest(t, bt[t-1], de[t-1])
+		
+		for k in range(0, 5):
+			print ("Iteration number {}".format(k))
+			players_bounds = defineBounds(t, power_to_optimize[t][3])
 			for i in range(0, N):
-				players_bounds = defineBounds(t, power_to_optimize[t][3])
+				print('player # {}'.format(i))
 				utility_functions = defineUtilityFunctions( \
 									power_to_optimize[t][0], \
 									power_to_optimize[t][1], \
@@ -142,28 +151,45 @@ def calculatingGame():
 				print ('----------------------------------------------')
 
 				res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
-				#res = minimize_scalar(utility_functions[i], bounds=(0,0), method='bounded')
+				#res = minimize_scalar(utility_functions[i], bounds=players_bounds[i], method='bounded')
 				power_to_optimize[t][i] = res.x
-				#print ("x {}, fn {}". format(res.x, res.fun))
 				#print ("Found max for utility function {} with x {} and fun value {}".format(i,power_to_optimize[t][i], res.fun))
-
-			print ("Iteration number {}".format(k))
+			print ('##################################################')
+			
 
 def testBatteryOptimization():
 	print ('testBatteryOptimization')
-	t = 0
+	t = 53
 	pv_b = pv[t]
 	wt_b = wt[t]
 	ld_b = ld[t]
-	bt_b = bt[t]
-	de_b = de[t]
-	print ('pv {}, wt {}, ld {}, bt {}, de {}'.format(pv_b, wt_b, ld_b, bt_b, de_b))
-	bt_bounds = (-uf.bt_capacity, uf.bt_capacity)
+	bt_b = -1.8306
+	de_b = 0.89
+	print ('pv {}, \nwt {},\nld {},\nbt {},\nde {}\n'.format(pv_b, wt_b, ld_b, bt_b, de_b))
+	
+	bt_bounds = [uf.bt_power_constraint(bt_b, dt)]
+
+	print ('bt_bounds {}'.format(bt_bounds))
 	bt_partial = partial (uf.bt_utility_fn, pv = pv_b, wt = wt_b, ld = ld_b, de = de_b, dt = dt)
-	res = minimize_scalar(bt_partial, bounds=bt_bounds, method='bounded')
+	bt_cons = [{"type": "ineq", "fun": uf.soc_bt_max_constraint_fn, 'args': (dt,)},
+			   {"type": "ineq", "fun": uf.soc_bt_min_constraint_fn, 'args': (dt,)}]
+
+	print ('----------------------------------------------------')
+	res = minimize(bt_partial,\
+				   x0 = bt_b,\
+				   bounds=[(0,10)], \
+				   #bounds=bt_bounds, \
+				   constraints = bt_cons)
+	bt_b = res.x
+	uf.soc_bt_fn(bt_b, dt)
+	print ('soc_final {}'.format(uf.bt_soc))
+	print ('####################################################')
+	print ('res.x {}'.format(res.x))
+
 
 #graphInitialData()
 calculatingGame()
 #testBatteryOptimization()
+
 
 
