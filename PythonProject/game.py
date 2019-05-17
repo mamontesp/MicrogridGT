@@ -1,5 +1,6 @@
 import gambit
 
+
 g = gambit.Game.new_table([1,1,1,1,1])
 g.title = "A microgrid design"
 
@@ -22,3 +23,5 @@ def playGame(pv, wt, ld, bt, de):
 	#g.players.add("BT")
 	#g.players.add("DE")
 	print ('playGame')
+
+
