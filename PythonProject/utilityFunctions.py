@@ -1,57 +1,200 @@
 import numpy as np
 import sympy as S
 from sympy import Abs, Symbol
+import argumentCollection as ac
 
-##Penalty function modelling
-alpha = 0.1
-d1 = 2
-d2 = 0.4
-
-##PV modelling
-pv_unit_electric_price = 2.0
-pv_unit_maintenance_cost = 0.5
-
-#WT modelling
-wt_unit_electric_price = 4.0
-wt_unit_maintenance_cost = 3.0
-
-##Diesel modelling
-de_oil_price = 3.0
-de_unit_electric_price = 4.0
-de_unit_maintenance_cost = 3.0
-de_rate_oil_consumption = 2
-de_a_oil_consumption = 1
-de_b_oil_consumption= 2
-de_c_oil_consumption = 1
-de_min = 0
-de_max = 10
-de_ramp_up = 2
-de_ramp_down = 1
-de_min_running_time = 0.3
-
-##Battery modelling
-bt_unit_electric_price = 0.1
-bt_unit_maintenance_cost = 0.05
-bt_self_dis_rate = 0.0001
-bt_max_energy_stored = 10
-bt_C = 0.05
-bt_char_eff = 0.95
-bt_dis_eff = 0.95
-bt_soc_max = 100
-bt_soc_min = 60
-bt_power_charge = -bt_C * bt_max_energy_stored * bt_char_eff
-bt_power_discharge = bt_C * bt_max_energy_stored * bt_dis_eff
-#bt_soc = bt_soc_min + 10
-bt_soc_init = 100
-bt_soc = bt_soc_init
+pf_list = []
 bt_soc_list = []
 
+alpha = 0
+d1 = 0
+d2 = 0
+
+pv_unit_electric_price = 0
+pv_unit_maintenance_cost = 0
+wt_unit_electric_price = 0
+wt_unit_maintenance_cost = 0
+de_oil_price = 0
+de_unit_electric_price = 0
+de_unit_maintenance_cost = 0
+de_rate_oil_consumption = 0
+de_a_oil_consumption = 0
+de_b_oil_consumption= 0
+de_c_oil_consumption = 0
+de_min = 0
+de_max = 0
+de_ramp_up = 0
+de_ramp_down = 0
+de_min_running_time = 0
+bt_unit_electric_price = 0
+bt_unit_maintenance_cost = 0
+bt_self_dis_rate = 0
+bt_rated_capacity = 0
+bt_C = 0
+bt_char_eff = 0
+bt_dis_eff = 0
+bt_soc_max = 0
+bt_soc_min = 0
+bt_power_charge = 0
+bt_power_discharge = 0
+bt_soc_init = 0
+bt_soc = 0
+ld_weight_satisfaction = 0
+ld_unit_electric_price = 0
+ld_beta = 0
+ld_alpha = 0
+
+#Penalty function modelling
+#alpha = 0.1
+#d1 = 2
+#d2 = 4
+#pf_list = []
+#bt_soc_list = []
+
+##PV modelling
+#pv_unit_electric_price = 2.0
+#pv_unit_maintenance_cost = 0.5
+
+#WT modelling
+#wt_unit_electric_price = 4.0
+#wt_unit_maintenance_cost = 3.0
+
+##Diesel modelling
+#de_oil_price = 3.0
+#de_unit_electric_price = 4.0
+#de_unit_maintenance_cost = 3.0
+#de_rate_oil_consumption = 2
+#de_a_oil_consumption = 1
+#de_b_oil_consumption= 2
+#de_c_oil_consumption = 1
+#de_min = 0
+#de_max = 10
+#de_ramp_up = 20
+#de_ramp_down = 10
+#de_min_running_time = 0.3
+
+##Battery modelling
+#bt_unit_electric_price = 0.1
+#bt_unit_maintenance_cost = 0.05
+#bt_self_dis_rate = 0.0000001
+#bt_rated_capacity = 2
+#bt_C = 0.2
+#bt_char_eff = 0.99
+#bt_dis_eff = 0.99
+#bt_soc_max = 100
+#bt_soc_min = 60
+#bt_power_charge = -bt_C * bt_rated_capacity * bt_char_eff
+#bt_power_discharge = bt_C * bt_rated_capacity * bt_dis_eff
+#bt_soc_init = bt_soc_min + 15
+#bt_soc = bt_soc_init
+
 ##Load modelling
-ld_weight_satisfaction = 0.9
-ld_unit_electric_price = 0.4
-ld_beta = -20
-ld_alpha = 0.5
-ld_nom = 0.022
+#ld_weight_satisfaction = 0.9
+#ld_unit_electric_price = 0.4
+#ld_beta = -1
+#ld_alpha = 0.5
+
+def define_parameters():
+	Args=ac.ParsingArguments() 
+
+	global alpha
+	global d1 
+	global d2 
+
+	global pv_unit_electric_price 
+	global pv_unit_maintenance_cost 
+	global wt_unit_electric_price 
+	global wt_unit_maintenance_cost 
+	global de_oil_price 
+	global de_unit_electric_price 
+	global de_unit_maintenance_cost 
+	global de_rate_oil_consumption 
+	global de_a_oil_consumption 
+	global de_b_oil_consumption
+	global de_c_oil_consumption 
+	global de_min 
+	global de_max 
+	global de_ramp_up 
+	global de_ramp_down 
+	global de_min_running_time 
+	global bt_unit_electric_price 
+	global bt_unit_maintenance_cost 
+	global bt_self_dis_rate 
+	global bt_rated_capacity 
+	global bt_C 
+	global bt_char_eff 
+	global bt_dis_eff 
+	global bt_soc_max 
+	global bt_soc_min 
+	global bt_power_charge 
+	global bt_power_discharge 
+	global bt_soc_init 
+	global bt_soc 
+	global ld_weight_satisfaction 
+	global ld_unit_electric_price 
+	global ld_beta 
+	global ld_alpha 
+	global test_name
+	global samples_to_analize 
+    
+    #Penalty function modelling
+	alpha =float(Args.alpha)
+	d1 =float(Args.powerbalance)
+	d2 =float(Args.nashequilibrium)
+
+	##PV modelling
+	pv_unit_electric_price =float(Args.pvuep)
+	pv_unit_maintenance_cost =float(Args.pvumc)
+
+	#WT modelling
+	wt_unit_electric_price =float(Args.wtuep)
+	wt_unit_maintenance_cost =float(Args.wtumc)
+
+	##Diesel modelling
+	
+	de_unit_electric_price =float( Args.deuep)
+	de_unit_maintenance_cost =float(Args.deumc)
+	de_oil_price =float(Args.deoilprice)
+	de_rate_oil_consumption =float(Args.derateconsumption)
+	de_a_oil_consumption =float(Args.deaoilconsumption)
+	de_b_oil_consumption=float(Args.deboilconsumption)
+	de_c_oil_consumption =float(Args.decoilconsumption)
+	de_min =float(Args.deminpower)
+	de_max =float(Args.demaxpower)
+	de_ramp_up =float(Args.derampup)
+	de_ramp_down =float(Args.derampdown)
+	de_min_running_time =float(Args.deminrunningtime)
+
+	##Battery modelling
+	bt_unit_electric_price =float(Args.btuep)
+	bt_unit_maintenance_cost =float(Args.btumc)
+	bt_self_dis_rate =float(Args.btselfdis)
+	bt_rated_capacity =float(Args.btratedcap)
+	bt_C =float(Args.btc)
+	bt_char_eff =float(Args.btchargeeff)
+	bt_dis_eff =float(Args.btdischargeeff)
+	bt_soc_max =float(Args.btsocmax)
+	bt_soc_min =float(Args.btsocmin)
+	
+	bt_soc_init =float(Args.btsocinit)
+	bt_power_charge =float(-bt_C * bt_rated_capacity * bt_char_eff)
+	bt_power_discharge =float(bt_C * bt_rated_capacity * bt_dis_eff)
+	bt_soc = bt_soc_init
+
+	##Load modelling
+	ld_weight_satisfaction = float(Args.ldweightsat)
+	ld_unit_electric_price = float(Args.lduep)
+	ld_beta = float(Args.ldbeta)
+	ld_alpha = float(Args.ldalpha)
+
+	test_name = Args.testname
+	samples_to_analize = float(Args.samplestoanalize)
+
+def get_test_name():
+    	return test_name
+
+def get_samples_to_analize():
+    	return samples_to_analize
 
 #Updating alpha to penalty energy balance function
 def reinit_alpha():
@@ -64,9 +207,15 @@ def pf_update_alpha():
 
 def ne_update_alpha():
 	global alpha
-	alpha += d2
+	alpha *= d2
 
 ##Penalty function to restrict power balance
+def update_penalty_fn(pv, wt, de, bt, ld):
+	pf_list.append(penalty_fn(pv, wt, de, bt, ld))
+
+def get_penalty_fn():
+	return pf_list
+
 def penalty_fn(pv, wt, de, bt, ld):
 	return pv + wt + de + bt + ld
 
@@ -118,13 +267,15 @@ def bt_utility_fn(bt, pv, wt, ld, de, dt):
 	#print ('wt {}'.format(wt))
 	#print ('ld {}'.format(ld))
 	#print ('de {}'.format(de))
-	print ('penalty_fn {}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
+	#print ('penalty_fn {}'.format(-alpha*np.power(penalty_fn(pv,wt,de,bt,ld),2)))
 	return -1*(bt_unit_electric_price*bt*dt \
 		- bt_unit_maintenance_cost*np.abs(bt)*dt \
 		- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
 
 def soc_bt_update_fn(bt, dt):
 	global bt_soc
+	print ('soc_bt_update_fn')
+	print ('bt {}'.format(bt))
 	bt_soc = soc_bt_fn(bt,dt)
 	bt_soc_list.append(bt_soc)
 
@@ -132,52 +283,43 @@ def get_bt_soc_list():
 	return bt_soc_list
 
 def soc_bt_fn(bt, dt):
-	return (bt_soc*(1-bt_self_dis_rate) - (bt*dt)/bt_max_energy_stored*bt_char_eff)
+	#print ('soc_bt_fn')
+	#print ('bt {}'.format(bt))
+	#print ('bt_soc*(1-bt_self_dis_rate) {}'.format(bt_soc*(1-bt_self_dis_rate)))
+	#print ('- (bt*dt)/bt_rated_capacity*bt_char_eff {}'.format( - ((bt*dt)/bt_rated_capacity)*bt_char_eff))
+	return (bt_soc*(1-bt_self_dis_rate) - 100*((bt*dt)/bt_rated_capacity)*bt_char_eff)
 
 def soc_bt_max_constraint_fn(bt, dt):
-	soc_bt_max_cn = bt_soc_max - bt_soc
-	print ('soc_bt_max_cn {}'.format(soc_bt_max_cn))
+	soc_bt_max_cn = bt_soc_max - soc_bt_fn(bt, dt)
+	#print ('soc_bt_max_cn {}'.format(soc_bt_max_cn))
 	return soc_bt_max_cn
 
 def soc_bt_min_constraint_fn(bt, dt):
 	soc_bt_min_cn = soc_bt_fn(bt, dt) - bt_soc_min 
-	print ('soc_bt_min_cn {}'.format(soc_bt_min_cn))
+	#print ('soc_bt_min_cn {}'.format(soc_bt_min_cn))
 	return soc_bt_min_cn
 
-#def bt_energy_min_max_constraint(bt,dt):
-#	if ((bt*dt < bt_energy_max) and (bt*dt > bt_energy_min)):
-#		return True
-#	else:
-#		return False
 
 def bt_power_constraint(bt,dt):
-	print ('fn bt_power_constraint')
-	print ('bt_power_charge {}'.format(bt_power_charge))
-	print ('bt_power_discharge {}'.format(bt_power_discharge))
-	print ('bt_soc {}'.format(bt_soc))
-	bt_power_max_charge = max(bt_power_charge, -(bt_soc_max - bt_soc)*bt_max_energy_stored*bt_char_eff)
-	bt_power_max_discharge = min(bt_power_discharge, (bt_soc - bt_soc_min)*bt_max_energy_stored*bt_dis_eff)
-	print('bt_power_max_charge {}'.format(bt_power_max_charge))
-	print('bt_power_max_discharge {}'.format(bt_power_max_discharge))
+	bt_power_max_charge = max(bt_power_charge, -(bt_soc_max - soc_bt_fn(bt, dt))*bt_rated_capacity*bt_char_eff)
+	bt_power_max_discharge = min(bt_power_discharge, (soc_bt_fn(bt, dt) - bt_soc_min)*bt_rated_capacity*bt_dis_eff)
+	#print('bt_power_max_charge {}'.format(bt_power_max_charge))
+	#print('bt_power_max_discharge {}'.format(bt_power_max_discharge))
 	return bt_power_max_charge, bt_power_max_discharge
 
-##Utility function of LD taking into account power balance
-def ld_utility_fn(ld, pv, wt, bt, de, dt):
-	#ld = ld[0]
-	#print ('PV {}'.format(pv))
-	#print ('WT {}'.format(wt))
-	#print ('LD {}'.format(ld))
-	#print ('BT {}'.format(bt))
-	#print ('DE {}'.format(de))
-	return -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*ld + ld_weight_satisfaction*ld_satifaction_fn(ld))
-
 ## Satisfaction function of load consumption
-def ld_satifaction_fn(ld):
+def ld_satifaction_fn(ld, ld_nom):
 	return ld_nom*ld_beta*(np.power((ld/ld_nom),ld_alpha) - 1)
 
-def verifyNashEquilibrium(bt, pv, wt, ld, de, dt):
+##Utility function of LD taking into account power balance
+def ld_utility_fn(ld, pv, wt, bt, de, dt, ld_nom):
+	return -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*ld + ld_weight_satisfaction*ld_satifaction_fn(ld, ld_nom))
+
 	
-	error_ne = 0.2
+
+def verifyNashEquilibrium(pv, wt, ld, bt, de, dt, ld_nom):
+	error_ne = 0.5
+	print ('pv {} \nwt {} \nld {} \nbt {} \nde {}'.format(pv, wt, ld, bt, de))
 
 	p = Symbol('p', real= True)
 	w = Symbol('w', real= True)
@@ -187,7 +329,7 @@ def verifyNashEquilibrium(bt, pv, wt, ld, de, dt):
 
 	f_ne_p = -1*(pv_unit_electric_price-pv_unit_maintenance_cost)*dt*p
 	f_ne_w = -1*(wt_unit_electric_price-wt_unit_maintenance_cost)*dt*w
-	f_ne_l = -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*l + ld_weight_satisfaction*(ld_nom*ld_beta*((l/ld_nom**ld_alpha) - 1)))
+	f_ne_l = -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*l + ld_weight_satisfaction*(ld_nom*ld_beta*(((l/ld_nom)**ld_alpha) - 1)))
 	f_ne_b = -1*(bt_unit_electric_price*dt*b - bt_unit_maintenance_cost*Abs(b)*dt)
 	f_ne_d = -1*((de_unit_electric_price-de_unit_maintenance_cost)*dt*d - de_oil_price * (de_a_oil_consumption* d**2 + de_b_oil_consumption*d + de_c_oil_consumption) * dt)
 	f_pf =  alpha * (p + w + d + b + l)**2
