@@ -6,8 +6,8 @@ import re
 def ParsingArguments():
     #Default Values
     ALPHA = 0.1 						# Weight of power balance
-    D1 = 2								# Update of alpha in case power balance is not reached
-    D2 = 4								# Update of alpha in case nash equilibrium is not reached
+    POWERBALANCE = 2								# Update of alpha in case power balance is not reached
+    NASHEQUILIBRIUM = 4								# Update of alpha in case nash equilibrium is not reached
 
     #unit_electric_price
     PV_UEP = 2.0
@@ -59,8 +59,8 @@ def ParsingArguments():
 
     Parser = argparse.ArgumentParser(description='Renewable resources dispatch')
     Parser.add_argument("-a","--alpha",help="Weight of power balance",default=ALPHA)
-    Parser.add_argument("-d1", "--powerbalance", help="Update of alpha in case power balance is not reached", default=D1)
-    Parser.add_argument("-d2", "--nashequilibrium", help="Update of alpha in case nash equilibrium is not reached", default=D2)
+    Parser.add_argument("-d1", "--powerbalance", help="Update of alpha in case power balance is not reached", default=POWERBALANCE)
+    Parser.add_argument("-d2", "--nashequilibrium", help="Update of alpha in case nash equilibrium is not reached", default=NASHEQUILIBRIUM)
     
     Parser.add_argument("-pvuep","--pvuep",help="Photovoltaics unit electric price",default=PV_UEP)
     Parser.add_argument("-wtuep","--wtuep",help="Wind turbine unit electric price",default=WT_UEP)
@@ -102,7 +102,7 @@ def ParsingArguments():
     Parser.add_argument("-tn","--testname",help="Folder name to save tests to run",default=TEST_NAME)
     Parser.add_argument("-sa","--samplestoanalize",help="Number of units of time to analize",default=SAMPLES_TO_ANALIZE)
         
-    Parser.add_argument("-pg", "--playwithgrid", help="Play with electric grid", action="store_true")
+    Parser.add_argument("-pg", "--playwithgrid", help="Option to include player electric grid to the game", action="store_true")
     Parser.add_argument("-ds", "--dataset", help="Name of dataset for initial resources and load data", default = DATA_SET_FILE_NAME)
 
     Args=Parser.parse_args()
