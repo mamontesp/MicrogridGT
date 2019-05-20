@@ -15,12 +15,14 @@ def ParsingArguments():
     DE_UEP = 4.0
     BT_UEP = 0.1
     LD_UEP = 0.4
+    EG_UEP = 0.4
 
     #unit_maintenance_cost
     PV_UMC = 0.5
     WT_UMC = 3.0
     DE_UMC = 3.0
     BT_UMC = 0.05
+    EG_UMC = 0.02
 
     #Diesel
     DE_OP = 3.0							#oil_price
@@ -38,7 +40,7 @@ def ParsingArguments():
 
     #Battery 
     BT_SELF_DIS = 0.0000001				#Self discharge rate
-    BT_RATED_CAP = 2					#Rated Capacity
+    BT_RATED_CAP = 10					#Rated Capacity
     BT_C = 0.2							#Battery C
     BT_DIS_EFF = 0.99					#Battery discharging efficiency
     BT_CHAR_EFF = 0.99					#Battery charging efficiency
@@ -52,7 +54,8 @@ def ParsingArguments():
     LD_ALPHA = 0.5
     
     TEST_NAME = 'Test'
-    SAMPLES_TO_ANALIZE = '20'
+    SAMPLES_TO_ANALIZE = 20
+    DATA_SET_FILE_NAME = '../FormattedDataSets/dataWithoutBatteries.csv'
 
     Parser = argparse.ArgumentParser(description='Renewable resources dispatch')
     Parser.add_argument("-a","--alpha",help="Weight of power balance",default=ALPHA)
@@ -64,11 +67,13 @@ def ParsingArguments():
     Parser.add_argument("-deuep","--deuep",help="Diesel unit electric price",default=DE_UEP)
     Parser.add_argument("-btuep","--btuep",help="Battery unit electric price",default=BT_UEP)
     Parser.add_argument("-lduep","--lduep",help="Load unit electric price",default=LD_UEP)
+    Parser.add_argument("-eguep","--eguep",help="Electric grid unit electric price",default=EG_UEP)
 
     Parser.add_argument("-pvumc","--pvumc",help="Photovoltaics unit maintenance cost",default=PV_UMC)
     Parser.add_argument("-wtumc","--wtumc",help="Wind turbine unit maintenance cost",default=WT_UMC)
     Parser.add_argument("-deumc","--deumc",help="Diesel unit maintenance cost",default=DE_UMC)
     Parser.add_argument("-btumc","--btumc",help="Battery unit maintenance cost",default=BT_UMC)
+    Parser.add_argument("-egumc","--egumc",help="Electric grid unit maintenance cost",default=EG_UMC)
 
     Parser.add_argument("-deop","--deoilprice",help="Oil price. Be consistent with units of DE_RC",default=DE_OP)
     Parser.add_argument("-derc","--derateconsumption",help="Oil rate consumption. Be consistent with units of DE_OP",default=DE_RC)
@@ -96,8 +101,10 @@ def ParsingArguments():
 
     Parser.add_argument("-tn","--testname",help="Folder name to save tests to run",default=TEST_NAME)
     Parser.add_argument("-sa","--samplestoanalize",help="Number of units of time to analize",default=SAMPLES_TO_ANALIZE)
+        
+    Parser.add_argument("-pg", "--playwithgrid", help="Play with electric grid", action="store_true")
+    Parser.add_argument("-ds", "--dataset", help="Name of dataset for initial resources and load data", default = DATA_SET_FILE_NAME)
 
-    
     Args=Parser.parse_args()
     return Args
 

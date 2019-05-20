@@ -43,7 +43,8 @@ ld_weight_satisfaction = 0
 ld_unit_electric_price = 0
 ld_beta = 0
 ld_alpha = 0
-
+eg_unit_electric_price = 0
+eg_unit_maintenance_cost = 0
 #Penalty function modelling
 #alpha = 0.1
 #d1 = 2
@@ -105,6 +106,8 @@ def define_parameters():
 	global pv_unit_maintenance_cost 
 	global wt_unit_electric_price 
 	global wt_unit_maintenance_cost 
+	global eg_unit_electric_price
+	global eg_unit_maintenance_cost
 	global de_oil_price 
 	global de_unit_electric_price 
 	global de_unit_maintenance_cost 
@@ -135,7 +138,9 @@ def define_parameters():
 	global ld_beta 
 	global ld_alpha 
 	global test_name
-	global samples_to_analize 
+	global samples_to_analize
+	global dataset
+	global playwithgrid
     
     #Penalty function modelling
 	alpha =float(Args.alpha)
@@ -189,12 +194,20 @@ def define_parameters():
 
 	test_name = Args.testname
 	samples_to_analize = float(Args.samplestoanalize)
+	dataset = Args.dataset
+	playwithgrid = Args.playwithgrid
 
 def get_test_name():
-    	return test_name
+	return test_name
 
 def get_samples_to_analize():
-    	return samples_to_analize
+	return samples_to_analize
+
+def get_dataset():
+	return dataset
+
+def get_playwithgrid():
+	return playwithgrid
 
 #Updating alpha to penalty energy balance function
 def reinit_alpha():
@@ -210,29 +223,35 @@ def ne_update_alpha():
 	alpha *= d2
 
 ##Penalty function to restrict power balance
-def update_penalty_fn(pv, wt, de, bt, ld):
-	pf_list.append(penalty_fn(pv, wt, de, bt, ld))
+def update_penalty_fn(pv, wt, bt, de, ld, eg = 0):
+	pf_list.append(penalty_fn(pv, wt, de, bt, eg, ld))
 
 def get_penalty_fn():
 	return pf_list
 
-def penalty_fn(pv, wt, de, bt, ld):
-	return pv + wt + de + bt + ld
+def penalty_fn(pv, wt, bt, de, ld, eg = 0):
+	return pv + wt + de + bt + ld + eg
 
 ##Utility function of PV taking into account power balance
-def pv_utility_fn(pv, wt, ld, bt, de, dt):
+def pv_utility_fn(pv, wt, ld, bt, de, dt, eg = 0):
 	return float(-1*((pv_unit_electric_price-pv_unit_maintenance_cost)*pv*dt \
-	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2)))
+	- alpha * np.power(penalty_fn(pv,wt,de,bt,eg,ld),2)))
 
 ##Utility function of WT taking into account power balance
-def wt_utility_fn(wt, pv, ld, bt, de, dt):
+def wt_utility_fn(wt, pv, ld, bt, de, dt, eg = 0):
 	return -1*((wt_unit_electric_price-wt_unit_maintenance_cost)*wt*dt \
-	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
+	- alpha * np.power(penalty_fn(pv,wt,de,bt, eg,ld),2))
 
 ##Utility function of DE taking into account power balance
-def de_utility_fn(de, pv, wt, ld, bt, dt):
+def de_utility_fn(de, pv, wt, ld, bt, dt, eg = 0):
+	print ('de_utility_fn')
+	print ('bt {}'.format(bt))
+	print ('pv {}'.format(pv))
+	print ('wt {}'.format(wt))
+	print ('ld {}'.format(ld))
+	print ('de {}'.format(de))
 	return -1*((de_unit_electric_price-de_unit_maintenance_cost)*de*dt - de_oil_price * rate_oil_consumption_fn(de) * dt\
-	- alpha * np.power(penalty_fn(pv,wt,de,bt,ld),2))
+	- alpha * np.power(penalty_fn(pv,wt,de,bt,eg,ld),2))
 
 ##Rate consumption of oil function
 def rate_oil_consumption_fn(de):
@@ -261,7 +280,7 @@ def minimun_running_time_de_constraint_fn(de, de_activation_list, t ,dt):
 	return 0			
 	
 
-def bt_utility_fn(bt, pv, wt, ld, de, dt):
+def bt_utility_fn(bt, pv, wt, de, ld, dt, eg = 0):
 	#print ('bt {}'.format(bt))
 	#print ('pv {}'.format(pv))
 	#print ('wt {}'.format(wt))
@@ -312,29 +331,37 @@ def ld_satifaction_fn(ld, ld_nom):
 	return ld_nom*ld_beta*(np.power((ld/ld_nom),ld_alpha) - 1)
 
 ##Utility function of LD taking into account power balance
-def ld_utility_fn(ld, pv, wt, bt, de, dt, ld_nom):
-	return -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*ld + ld_weight_satisfaction*ld_satifaction_fn(ld, ld_nom))
+def ld_utility_fn(ld, pv, wt, bt, de, dt, ld_nom, eg = 0):
+	return -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*ld + \
+	 ld_weight_satisfaction*ld_satifaction_fn(ld, ld_nom) \
+	 - alpha * np.power(penalty_fn(pv,wt,de,bt,eg,ld),2) \
+	 )
 
-	
+##Utility function of external grid taking into account power balance
+def eg_utility_fn(eg, pv, wt, bt, de, ld, dt, teg=0):
+	return -1*(teg*eg*dt \
+	- alpha * np.power(penalty_fn(pv,wt,de,bt,eg,ld),2))	
 
-def verifyNashEquilibrium(pv, wt, ld, bt, de, dt, ld_nom):
+def verifyNashEquilibrium(pv, wt, ld, bt, de, eg, dt, ld_nom, teg=0):
 	error_ne = 0.5
-	print ('pv {} \nwt {} \nld {} \nbt {} \nde {}'.format(pv, wt, ld, bt, de))
+	print ('pv {} \nwt {} \nld {} \nbt {} \nde {}  \neg {}'.format(pv, wt, ld, bt, de, eg))
 
 	p = Symbol('p', real= True)
 	w = Symbol('w', real= True)
 	l = Symbol('l', real= True)
 	b = Symbol('b', real= True)
 	d = Symbol('d', real= True)
+	e = Symbol('e', real= True)
 
 	f_ne_p = -1*(pv_unit_electric_price-pv_unit_maintenance_cost)*dt*p
 	f_ne_w = -1*(wt_unit_electric_price-wt_unit_maintenance_cost)*dt*w
 	f_ne_l = -1*((1-ld_weight_satisfaction)*ld_unit_electric_price*l + ld_weight_satisfaction*(ld_nom*ld_beta*(((l/ld_nom)**ld_alpha) - 1)))
 	f_ne_b = -1*(bt_unit_electric_price*dt*b - bt_unit_maintenance_cost*Abs(b)*dt)
 	f_ne_d = -1*((de_unit_electric_price-de_unit_maintenance_cost)*dt*d - de_oil_price * (de_a_oil_consumption* d**2 + de_b_oil_consumption*d + de_c_oil_consumption) * dt)
-	f_pf =  alpha * (p + w + d + b + l)**2
+	f_ne_e = -1*((teg - eg_unit_maintenance_cost)*dt*e)
+	f_pf =  alpha * (p + w + d + b + l + e)**2
 
-	f_nash_equilibrium = f_ne_p + f_ne_w + f_ne_l + f_ne_b + f_ne_d -f_pf
+	f_nash_equilibrium = f_ne_p + f_ne_w + f_ne_l + f_ne_b + f_ne_d + f_ne_e -f_pf
 	
 	#print ('f_ne_p = {}'.format(f_ne_p))
 	#print ('f_ne_w = {}'.format(f_ne_w))
@@ -348,6 +375,7 @@ def verifyNashEquilibrium(pv, wt, ld, bt, de, dt, ld_nom):
 	l_derivate = S.diff(f_nash_equilibrium, l)
 	b_derivate = S.diff(f_nash_equilibrium, b)
 	d_derivate = S.diff(f_nash_equilibrium, d)
+	e_derivate = S.diff(f_nash_equilibrium, e)
 
 	#print ('p_derivate = {}'.format(p_derivate))
 	#print ('w_derivate = {}'.format(w_derivate))
@@ -355,18 +383,21 @@ def verifyNashEquilibrium(pv, wt, ld, bt, de, dt, ld_nom):
 	#print ('b_derivate = {}'.format(b_derivate))
 	#print ('d_derivate = {}'.format(d_derivate))
 
-	p_min = p_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de})
-	w_min = w_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de})
-	l_min = l_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de})
-	b_min = b_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de})
-	d_min = d_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de})
+	p_min = p_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	w_min = w_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	l_min = l_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	l_min = l_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	b_min = b_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	d_min = d_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
+	e_min = e_derivate.evalf(subs={p:pv, w: wt, l: ld, b:bt, d: de, e:eg})
 
-	print ('p_derivate {} \nw_derivate {} \nl_derivate {} \nb_derivate {} \nd_derivate {}'.format(p_min, w_min, l_min, b_min, d_min))
+	print ('p_derivate {} \nw_derivate {} \nl_derivate {} \nb_derivate {} \nd_derivate {} \ne_derivate {}'.format(p_min, w_min, l_min, b_min, d_min, e_min))
 	if ((np.abs(p_min) < error_ne) and \
 	 	(np.abs(w_min) < error_ne) and \
 	 	(np.abs(l_min) < error_ne) and \
 	 	(np.abs(b_min) < error_ne) and \
-	 	(np.abs(d_min) < error_ne)):
+	 	(np.abs(d_min) < error_ne) and \
+	 	(np.abs(e_min) < error_ne)):
 		return True
 	else:
 		return False
