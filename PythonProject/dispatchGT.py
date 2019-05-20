@@ -28,7 +28,6 @@ k = 1 # Counter for iterations
 ep1 = 0.05
 ep2 = 0.001
 loadMultiplier = 12
-electricTariffMultiplier = 50
 
 ##Players
 # PV = 0 
@@ -62,6 +61,7 @@ def loadData():
 	##ff from file
 	playwithgrid = uf.get_playwithgrid()
 	dataset = uf.get_dataset()
+	electricTariffMultiplier = uf.get_electric_tariff_multi()
 	td_ff, pv_ff, wt_ff, ld_ff, bt_ff, de_ff, teg_ff= loadingData.openFile(dataset, playwithgrid)
 	ld_ff =  [i * -1 * loadMultiplier for i in ld_ff]
 	teg_ff =  [i * -1 * electricTariffMultiplier for i in teg_ff]
@@ -334,8 +334,11 @@ def graphFinalData():
 	
 	test_name = uf.get_test_name()
 	get_path_to_save(test_name)
+	electricTariffMultiplier = uf.get_electric_tariff_multi()
+	fig_name = './' + test_name + '/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}_ElecCostMulti_{}.eps'.format(loadMultiplier, \
+					MaxIter, uf.bt_rated_capacity, uf.bt_soc_init, \
+					uf.bt_C, uf.de_ramp_up,electricTariffMultiplier)
 
-	fig_name = './' + test_name + '/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}.eps'.format(loadMultiplier, MaxIter, uf.bt_rated_capacity, uf.bt_soc_init, uf.bt_C, uf.de_ramp_up)
 	#fig_name = './fig/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}.eps'.format(loadMultiplier, MaxIter, uf.bt_rated_capacity, uf.bt_soc_init, uf.bt_C, uf.de_ramp_up)
 	plt.savefig(fig_name, format='eps', dpi =1000)
 	#plt.show()

@@ -106,7 +106,7 @@ def define_parameters():
 	global pv_unit_maintenance_cost 
 	global wt_unit_electric_price 
 	global wt_unit_maintenance_cost 
-	global eg_unit_electric_price
+	global eg_tariff_multiplier
 	global eg_unit_maintenance_cost
 	global de_oil_price 
 	global de_unit_electric_price 
@@ -156,7 +156,6 @@ def define_parameters():
 	wt_unit_maintenance_cost =float(Args.wtumc)
 
 	##Diesel modelling
-	
 	de_unit_electric_price =float( Args.deuep)
 	de_unit_maintenance_cost =float(Args.deumc)
 	de_oil_price =float(Args.deoilprice)
@@ -192,10 +191,17 @@ def define_parameters():
 	ld_beta = float(Args.ldbeta)
 	ld_alpha = float(Args.ldalpha)
 
+	#Electric grid modelling
+	eg_tariff_multiplier = float(Args.egtm)
+
+	#General simulation setup
 	test_name = Args.testname
 	samples_to_analize = float(Args.samplestoanalize)
 	dataset = Args.dataset
 	playwithgrid = Args.playwithgrid
+
+def get_electric_tariff_multi():
+	return eg_tariff_multiplier
 
 def get_test_name():
 	return test_name

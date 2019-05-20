@@ -15,7 +15,7 @@ def ParsingArguments():
     DE_UEP = 4.0
     BT_UEP = 0.1
     LD_UEP = 0.4
-    EG_UEP = 0.4
+    EG_TM = 20
 
     #unit_maintenance_cost
     PV_UMC = 0.5
@@ -67,7 +67,7 @@ def ParsingArguments():
     Parser.add_argument("-deuep","--deuep",help="Diesel unit electric price",default=DE_UEP)
     Parser.add_argument("-btuep","--btuep",help="Battery unit electric price",default=BT_UEP)
     Parser.add_argument("-lduep","--lduep",help="Load unit electric price",default=LD_UEP)
-    Parser.add_argument("-eguep","--eguep",help="Electric grid unit electric price",default=EG_UEP)
+    Parser.add_argument("-egtm","--egtm",help="Electric grid unit tariff multiplier",default=EG_TM)
 
     Parser.add_argument("-pvumc","--pvumc",help="Photovoltaics unit maintenance cost",default=PV_UMC)
     Parser.add_argument("-wtumc","--wtumc",help="Wind turbine unit maintenance cost",default=WT_UMC)
