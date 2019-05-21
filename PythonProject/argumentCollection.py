@@ -102,7 +102,7 @@ def ParsingArguments():
     Parser.add_argument("-tn","--testname",help="Folder name to save tests to run",default=TEST_NAME)
     Parser.add_argument("-sa","--samplestoanalize",help="Number of units of time to analize",default=SAMPLES_TO_ANALIZE)
         
-    Parser.add_argument("-pg", "--playwithgrid", help="Option to include player electric grid to the game", action="store_true")
+    Parser.add_argument("-pg", "--playwithgrid", help="Option to include player electric grid to the game", action="store_true", default=False)
     Parser.add_argument("-ds", "--dataset", help="Name of dataset for initial resources and load data", default = DATA_SET_FILE_NAME)
 
     Args=Parser.parse_args()

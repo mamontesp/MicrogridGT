@@ -55,11 +55,12 @@ def set_number_of_players():
 	if (playwithgrid==True):
 		N = 6
 	else:
-		N=5
+		N = 5
 
 def loadData():
 	##ff from file
 	playwithgrid = uf.get_playwithgrid()
+	print('playwithgrid {}'.format(playwithgrid))
 	dataset = uf.get_dataset()
 	electricTariffMultiplier = uf.get_electric_tariff_multi()
 	td_ff, pv_ff, wt_ff, ld_ff, bt_ff, de_ff, teg_ff= loadingData.openFile(dataset, playwithgrid)
@@ -112,7 +113,7 @@ def graphInitialData():
 	fig_fd.subplots_adjust(hspace=0.8)
 	fig_name = './' + test_name + '/InitialData.eps'
 	plt.savefig(fig_name, format='eps', dpi =1000)
-	plt.show()
+	#plt.show()
 
 def defineBounds(t, bt = 0):
 	pv_bounds = (0, pv[t])
@@ -335,9 +336,10 @@ def graphFinalData():
 	test_name = uf.get_test_name()
 	get_path_to_save(test_name)
 	electricTariffMultiplier = uf.get_electric_tariff_multi()
-	fig_name = './' + test_name + '/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}_ElecCostMulti_{}.eps'.format(loadMultiplier, \
+	fig_name = './' + test_name + '/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}_ElecCostMulti_{}_pg{}.eps'.format(loadMultiplier, \
 					MaxIter, uf.bt_rated_capacity, uf.bt_soc_init, \
-					uf.bt_C, uf.de_ramp_up,electricTariffMultiplier)
+					uf.bt_C, uf.de_ramp_up,electricTariffMultiplier,\
+					uf.get_playwithgrid())
 
 	#fig_name = './fig/optimizedData_LoadMultiplier_{}_MaxIter_{}_BatCap_{}_Socinit_{}_BTC_{}_DERU_{}.eps'.format(loadMultiplier, MaxIter, uf.bt_rated_capacity, uf.bt_soc_init, uf.bt_C, uf.de_ramp_up)
 	plt.savefig(fig_name, format='eps', dpi =1000)
