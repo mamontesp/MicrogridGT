@@ -100,7 +100,7 @@ def graphInitialData():
 
 	handles_ax1, labels_ax1 = ax1.get_legend_handles_labels()
 
-	ax1.legend(handles_ax1, labels_ax1,loc='upper left', fontsize = 'small', ncol =2)
+	ax1.legend(handles_ax1, labels_ax1, fontsize = 'small', ncol =2)
 	ax1.xaxis.set_major_locator(hours)
 	ax1.xaxis.set_major_formatter(hoursFmt)
 	ax1.xaxis.set_minor_locator(minutes)
@@ -290,7 +290,7 @@ def graphFinalData():
 	ax2.set_ylabel("% of charge")
 
 	ax3.set_xlabel("Hours in a day")
-	ax3.set_ylabel("Tariff per kWh [$]")
+	ax3.set_ylabel("kWh")
 
 	hours = mdates.HourLocator(interval = 2) #every two hours
 	minutes = mdates.MinuteLocator(interval = 30) #every 30 minutes
@@ -327,7 +327,7 @@ def graphFinalData():
 	handles_ax2, labels_ax2 = ax2.get_legend_handles_labels()
 	handles_ax3, labels_ax3 = ax3.get_legend_handles_labels()
 
-	ax1.legend(handles_ax1, labels_ax1, loc='lower center', fontsize = 'small', ncol =6)
+	ax1.legend(handles_ax1, labels_ax1, fontsize = 'small', ncol =1, bbox_to_anchor=(1, 1.2))
 	ax2.legend(handles_ax2, labels_ax2, fontsize = 'small', ncol =2)
 	ax3.legend(handles_ax3, labels_ax3, fontsize = 'small', ncol =2)
 
