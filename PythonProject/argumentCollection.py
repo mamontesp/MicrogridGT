@@ -29,8 +29,8 @@ def ParsingArguments():
     DE_RC = 2							#rate consumption
     DE_MIN = 0							#min diesel power
     DE_MAX = 10							#max diesel power
-    DE_RAMP_UP = 20						#Ramp up for diesel machine
-    DE_RAMP_DOWN = 10    				#Ramp down for diesel machine
+    DE_RAMP_UP = 1						#Ramp up for diesel machine
+    DE_RAMP_DOWN = 3    				#Ramp down for diesel machine
     DE_MIN_RUNNING_TIME = 0.3			#Diesel machine min running time
     
     #diesel consumption arguments
@@ -40,7 +40,7 @@ def ParsingArguments():
 
     #Battery 
     BT_SELF_DIS = 0.0000001				#Self discharge rate
-    BT_RATED_CAP = 10					#Rated Capacity
+    BT_RATED_CAP = 5					#Rated Capacity
     BT_C = 0.2							#Battery C
     BT_DIS_EFF = 0.99					#Battery discharging efficiency
     BT_CHAR_EFF = 0.99					#Battery charging efficiency
